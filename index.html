@@ -2,38 +2,24 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>온라인 끝말잇기</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔤 온라인 끝말잇기</title>
 <style>
 *{box-sizing:border-box}
-body{
-  margin:0;padding:20px;
-  background:#0f172a;color:#f8fafc;
-  font-family:system-ui,sans-serif;
-}
+body{margin:0;padding:16px;background:#0f172a;color:#f8fafc;font-family:system-ui,sans-serif}
 main{max-width:500px;margin:auto}
 h1{text-align:center}
-.card{
-  background:#1e293b;padding:20px;
-  border-radius:18px;margin:16px 0;
-}
-input,button{
-  display:block;width:100%;padding:13px;
-  margin-top:10px;border:0;border-radius:10px;
-  font-size:16px;
-}
+.card{background:#1e293b;padding:18px;border-radius:18px;margin:16px 0}
+input,button{display:block;width:100%;padding:13px;margin-top:10px;border:0;border-radius:10px;font-size:16px}
 input{background:#334155;color:white}
-button{
-  background:#3b82f6;color:white;
-  font-weight:bold;cursor:pointer;
-}
+button{background:#3b82f6;color:white;font-weight:bold;cursor:pointer}
 button:disabled{opacity:.45}
 .secondary{background:#475569}
 .center{text-align:center}
-#status{color:#93c5fd;text-align:center}
+#status{color:#93c5fd;text-align:center;overflow-wrap:anywhere}
 #roomCode{font-size:28px;font-weight:bold;letter-spacing:4px}
-#lastWord{font-size:32px;font-weight:bold}
-#message{color:#fbbf24;min-height:24px}
+#lastWord{font-size:32px;font-weight:bold;overflow-wrap:anywhere}
+#message{color:#fbbf24;min-height:24px;overflow-wrap:anywhere}
 #words{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none}
 #words li{background:#334155;padding:8px;border-radius:8px}
 .hidden{display:none!important}
@@ -42,41 +28,40 @@ button:disabled{opacity:.45}
 </head>
 <body>
 <main>
-<h1>🔤 끝말잇기</h1>
+<h1>🔤 끝말잇기 🎮</h1>
 <p id="status">Firebase 연결 중...</p>
 
 <section id="setup" class="card">
-  <h3>닉네임</h3>
-  <input id="nickname" maxlength="12" placeholder="닉네임 입력">
-  <button id="createBtn" disabled>새 방 만들기</button>
-  <hr style="border-color:#475569;margin:20px 0">
-  <input id="roomInput" maxlength="6" placeholder="6자리 방 코드">
-  <button id="joinBtn" class="secondary" disabled>방 참가하기</button>
+<h3>👤 닉네임</h3>
+<input id="nickname" maxlength="12" placeholder="닉네임 입력">
+<button id="createBtn" disabled>➕ 새 방 만들기</button>
+<hr style="border-color:#475569;margin:20px 0">
+<input id="roomInput" maxlength="6" inputmode="numeric" placeholder="6자리 방 코드">
+<button id="joinBtn" class="secondary" disabled>🚪 방 참가하기</button>
 </section>
 
 <section id="game" class="card hidden">
-  <p class="center">방 코드</p>
-  <div id="roomCode" class="center"></div>
-  <button id="copyBtn" class="secondary">방 코드 복사</button>
+<p class="center">방 코드</p>
+<div id="roomCode" class="center"></div>
+<button id="copyBtn" class="secondary">📋 방 코드 복사</button>
+<p id="players" class="center"></p>
+<h3 id="turn" class="center">대기 중</h3>
 
-  <p id="players" class="center"></p>
-  <h3 id="turn" class="center">대기 중</h3>
+<div class="card center" style="background:#0f172a">
+<p class="small">마지막 단어</p>
+<div id="lastWord">첫 단어를 입력하세요</div>
+<p id="required"></p>
+</div>
 
-  <div class="card center" style="background:#0f172a">
-    <p class="small">마지막 단어</p>
-    <div id="lastWord">첫 단어를 입력하세요</div>
-    <p id="required"></p>
-  </div>
+<form id="wordForm">
+<input id="wordInput" maxlength="30" placeholder="단어 입력" autocomplete="off">
+<button id="submitBtn" type="submit">단어 제출</button>
+</form>
 
-  <form id="wordForm">
-    <input id="wordInput" maxlength="30" placeholder="단어 입력" autocomplete="off">
-    <button id="submitBtn" type="submit">단어 제출</button>
-  </form>
-
-  <p id="message" role="status"></p>
-  <h3>사용한 단어</h3>
-  <ul id="words"></ul>
-  <button id="leaveBtn" class="secondary">나가기</button>
+<p id="message" role="status"></p>
+<h3>📚 사용한 단어</h3>
+<ul id="words"></ul>
+<button id="leaveBtn" class="secondary">🚪 방 나가기</button>
 </section>
 </main>
 
@@ -96,54 +81,51 @@ const firebaseConfig = {
 };
 
 const $ = id => document.getElementById(id);
-let db, uid, roomRef, roomId, roomData, listener;
-let busy = false;
+let db,uid,roomRef,roomId,roomData,listener;
+let busy=false;
+let leaving=false;
 
-function setStatus(text){ $("status").textContent = text; }
-function say(text){ $("message").textContent = text; }
-
-function normalize(s){ return s.trim().replace(/\s+/g,""); }
-function first(s){ return [...s][0]; }
-function last(s){ return [...s].at(-1); }
+function setStatus(s){$("status").textContent=s}
+function say(s){$("message").textContent=s}
+function normalize(s){return s.trim().replace(/\s+/g,"")}
+function first(s){return [...s][0]}
+function last(s){return [...s].at(-1)}
 
 async function init(){
   try{
     firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-
+    db=firebase.database();
     await firebase.auth().signInAnonymously();
-    uid = firebase.auth().currentUser.uid;
-
-    $("createBtn").disabled = false;
-    $("joinBtn").disabled = false;
-    setStatus("Firebase 연결 완료!");
+    uid=firebase.auth().currentUser.uid;
+    $("createBtn").disabled=false;
+    $("joinBtn").disabled=false;
+    setStatus("✅ Firebase 연결 완료!");
   }catch(e){
-    setStatus("Firebase 연결 실패: " + e.message);
+    setStatus("❌ Firebase 연결 실패: "+e.message);
     console.error(e);
   }
 }
 
 function newCode(){
-  return String(Math.floor(100000 + Math.random()*900000));
+  return String(Math.floor(100000+Math.random()*900000));
 }
 
 async function createRoom(){
-  if(busy) return;
-  const name = $("nickname").value.trim();
-  if(!name) return alert("닉네임을 입력해!");
+  if(busy)return;
+  const name=$("nickname").value.trim();
+  if(!name)return alert("닉네임을 입력해!");
 
-  busy = true;
-  $("createBtn").disabled = true;
+  busy=true;
+  $("createBtn").disabled=true;
 
   try{
-    let success = false;
+    let created=null;
 
     for(let i=0;i<10;i++){
-      const code = newCode();
-      const ref = db.ref("rooms/"+code);
-
-      const result = await ref.transaction(old=>{
-        if(old !== null) return;
+      const code=newCode();
+      const ref=db.ref("rooms/"+code);
+      const result=await ref.transaction(old=>{
+        if(old!==null)return;
         return {
           players:{[uid]:{name}},
           words:[],
@@ -155,73 +137,84 @@ async function createRoom(){
       });
 
       if(result.committed){
-        roomId = code;
-        success = true;
+        created=code;
         break;
       }
     }
 
-    if(!success) throw Error("방 생성에 실패했어.");
+    if(!created)throw Error("방 생성에 실패했어. 다시 시도해 줘.");
+    roomId=created;
     enterRoom();
   }catch(e){
     alert("방 생성 실패: "+e.message);
   }finally{
-    busy = false;
-    $("createBtn").disabled = false;
+    busy=false;
+    $("createBtn").disabled=false;
   }
 }
 
 async function joinRoom(){
-  if(busy) return;
+  if(busy)return;
 
-  const name = $("nickname").value.trim();
-  const code = $("roomInput").value.trim();
+  const name=$("nickname").value.trim();
+  const code=$("roomInput").value.trim();
 
-  if(!name) return alert("닉네임을 입력해!");
-  if(!/^\d{6}$/.test(code)) return alert("방 코드는 숫자 6자리야.");
+  if(!name)return alert("닉네임을 입력해!");
+  if(!/^\d{6}$/.test(code))return alert("방 코드는 숫자 6자리야.");
 
-  busy = true;
-  $("joinBtn").disabled = true;
+  busy=true;
+  $("joinBtn").disabled=true;
 
   try{
-    const ref = db.ref("rooms/"+code);
+    const ref=db.ref("rooms/"+code);
+    const result=await ref.transaction(old=>{
+      if(!old||!old.players)return;
+      if(old.players[uid])return;
+      if(old.started||Object.keys(old.players).length>=2)return;
 
-    const result = await ref.transaction(old=>{
-      if(!old || !old.players) return;
-      if(old.players[uid]) return;
-      if(old.started || Object.keys(old.players).length >= 2) return;
-
-      old.players[uid] = {name};
-      old.started = true;
+      old.players[uid]={name};
+      old.started=true;
       return old;
     });
 
     if(!result.committed){
-      throw Error("방이 없거나 이미 가득 찼어.");
+      const snap=await ref.once("value");
+      const r=snap.val();
+
+      if(!r){
+        throw Error("이 방은 존재하지 않아. 방 코드를 확인하거나 새 방을 만들어 줘.");
+      }
+      if(!r.players){
+        throw Error("방 데이터가 올바르지 않아. 새 방을 만들어 줘.");
+      }
+      if(r.players[uid]){
+        throw Error("이 계정은 이미 방에 참가한 상태야. 방 화면으로 돌아가 줘.");
+      }
+      if(r.started||Object.keys(r.players).length>=2){
+        throw Error("방이 이미 시작됐거나 가득 찼어. 방을 새로 만들어 줘.");
+      }
+      throw Error("참가가 완료되지 않았어. Firebase 데이터베이스 규칙을 확인해 줘.");
     }
 
-    roomId = code;
+    roomId=code;
     enterRoom();
   }catch(e){
-    alert("참가 실패: "+e.message);
+    alert("참가 실패:\n"+e.message);
+    console.error("참가 오류",e);
   }finally{
-    busy = false;
-    $("joinBtn").disabled = false;
+    busy=false;
+    $("joinBtn").disabled=false;
   }
 }
 
 function enterRoom(){
   $("setup").classList.add("hidden");
   $("game").classList.remove("hidden");
-  $("roomCode").textContent = roomId;
+  $("roomCode").textContent=roomId;
 
-  roomRef = db.ref("rooms/"+roomId);
-
-  if(listener) roomRef.off("value",listener);
-
-  listener = roomRef.on("value",snap=>{
-    roomData = snap.val();
-
+  roomRef=db.ref("rooms/"+roomId);
+  listener=roomRef.on("value",snap=>{
+    roomData=snap.val();
     if(!roomData){
       setStatus("방이 삭제되었어.");
       return;
@@ -233,120 +226,171 @@ function enterRoom(){
 }
 
 function render(){
-  const r = roomData;
-  const players = r.players || {};
-  const ids = Object.keys(players);
+  if(!roomData)return;
+  const r=roomData;
+  const players=r.players||{};
+  const ids=Object.keys(players);
 
-  $("players").textContent = ids.map((id,i)=>
-    `${i+1}. ${players[id].name}${id===uid?" (나)":""}`
+  $("players").textContent=ids.map((id,i)=>
+    `${i+1}. ${players[id].name||"플레이어"}${id===uid?" (나)":""}`
   ).join(" | ");
 
-  if(ids.length < 2){
-    $("turn").textContent = "상대방 기다리는 중...";
+  if(ids.length<2){
+    $("turn").textContent="⏳ 상대방 기다리는 중...";
     setStatus("방 코드를 친구에게 알려 줘!");
   }else if(r.turn===uid){
-    $("turn").textContent = "🟢 내 차례!";
+    $("turn").textContent="🟢 내 차례!";
     setStatus("단어를 입력해!");
   }else{
-    $("turn").textContent = "⏳ 상대방 차례";
+    $("turn").textContent="⏳ 상대방 차례";
     setStatus("상대방이 입력 중이야.");
   }
 
-  $("lastWord").textContent = r.lastWord || "첫 단어!";
-  $("required").textContent = r.lastWord
-    ? last(r.lastWord)+"(으)로 시작하는 단어"
-    : "아무 단어나 입력해!";
+  $("lastWord").textContent=r.lastWord||"첫 단어!";
+  $("required").textContent=r.lastWord
+    ?last(r.lastWord)+"(으)로 시작하는 단어"
+    :"아무 단어나 입력해!";
 
   $("words").replaceChildren();
-
   (r.words||[]).slice().reverse().forEach(item=>{
-    const li = document.createElement("li");
-    li.textContent = item.word+" · "+item.name;
+    const li=document.createElement("li");
+    li.textContent=item.word+" · "+item.name;
     $("words").appendChild(li);
   });
 
-  const canPlay = ids.length===2 && r.turn===uid;
-  $("wordInput").disabled = !canPlay;
-  $("submitBtn").disabled = !canPlay;
+  const canPlay=ids.length===2&&r.started&&r.turn===uid;
+  $("wordInput").disabled=!canPlay;
+  $("submitBtn").disabled=!canPlay;
 }
 
 async function submitWord(e){
   e.preventDefault();
-  if(!roomRef || !roomData || busy) return;
+  if(!roomRef||!roomData||busy)return;
 
-  const word = normalize($("wordInput").value);
-
+  const word=normalize($("wordInput").value);
   if(!/^[가-힣]+$/.test(word)){
     say("한글 단어만 입력해!");
     return;
   }
 
-  busy = true;
-  $("submitBtn").disabled = true;
+  busy=true;
+  $("submitBtn").disabled=true;
 
   try{
-    const result = await roomRef.transaction(r=>{
-      if(!r || !r.players || !r.started || r.turn!==uid) return;
+    let reason="";
 
-      const words = r.words || [];
+    const result=await roomRef.transaction(r=>{
+      reason="";
+      if(!r||!r.players||!r.started||r.turn!==uid){
+        reason="지금은 네 차례가 아니야.";
+        return;
+      }
 
-      if(words.some(x=>x.word===word)) return;
-      if(r.lastWord && first(word)!==last(r.lastWord)) return;
+      const words=r.words||[];
+      if(words.some(x=>x.word===word)){
+        reason="이미 사용한 단어야!";
+        return;
+      }
+      if(r.lastWord&&first(word)!==last(r.lastWord)){
+        reason="끝 글자와 첫 글자가 맞지 않아!";
+        return;
+      }
 
-      const other = Object.keys(r.players).find(id=>id!==uid);
-      if(!other) return;
+      const other=Object.keys(r.players).find(id=>id!==uid);
+      if(!other){
+        reason="상대방이 방에 없어.";
+        return;
+      }
 
-      r.words = words.concat([{
-        word,
-        uid,
-        name:r.players[uid].name,
-        time:Date.now()
+      r.words=words.concat([{
+        word,uid,name:r.players[uid].name,time:Date.now()
       }]);
-
-      r.lastWord = word;
-      r.turn = other;
+      r.lastWord=word;
+      r.turn=other;
       return r;
     });
 
     if(result.committed){
-      $("wordInput").value = "";
+      $("wordInput").value="";
       say("성공! 🎉");
     }else{
-      say("틀렸어! 끝 글자, 중복, 차례를 확인해.");
+      say(reason||"제출에 실패했어. 다시 확인해 줘.");
     }
   }catch(e){
     say("제출 실패: "+e.message);
   }finally{
-    busy = false;
+    busy=false;
     render();
   }
 }
 
-$("createBtn").onclick = createRoom;
-$("joinBtn").onclick = joinRoom;
-$("wordForm").onsubmit = submitWord;
+async function leaveRoom(){
+  if(leaving||!roomRef||!roomId)return;
+  if(!confirm("방에서 나갈까? 현재 게임의 참가 정보가 삭제돼."))return;
 
-$("copyBtn").onclick = async()=>{
+  leaving=true;
+  const oldRef=roomRef;
+  const oldListener=listener;
+  const oldId=roomId;
+
+  $("leaveBtn").disabled=true;
+
+  try{
+    if(oldListener)oldRef.off("value",oldListener);
+
+    const result=await oldRef.transaction(r=>{
+      if(!r||!r.players||!r.players[uid])return;
+      delete r.players[uid];
+
+      if(Object.keys(r.players).length===0){
+        return null;
+      }
+
+      r.started=false;
+      r.turn=Object.keys(r.players)[0];
+      return r;
+    });
+
+    if(!result.committed){
+      say("나가기 처리에 실패했어. 다시 시도해 줘.");
+      listener=oldRef.on("value",snap=>{
+        roomData=snap.val();
+        if(roomData)render();
+      });
+      return;
+    }
+
+    roomRef=null;
+    listener=null;
+    roomId=null;
+    roomData=null;
+
+    $("game").classList.add("hidden");
+    $("setup").classList.remove("hidden");
+    $("roomInput").value="";
+    $("wordInput").value="";
+    say("");
+    setStatus("방에서 나왔어. 새 방을 만들거나 참가해 줘.");
+  }catch(e){
+    alert("나가기 실패: "+e.message);
+  }finally{
+    leaving=false;
+    $("leaveBtn").disabled=false;
+  }
+}
+
+$("createBtn").onclick=createRoom;
+$("joinBtn").onclick=joinRoom;
+$("wordForm").onsubmit=submitWord;
+$("leaveBtn").onclick=leaveRoom;
+
+$("copyBtn").onclick=async()=>{
   try{
     await navigator.clipboard.writeText(roomId);
-    say("방 코드 복사 완료!");
+    say("방 코드 복사 완료! 📋");
   }catch{
     say("방 코드: "+roomId);
   }
-};
-
-$("leaveBtn").onclick = ()=>{
-  if(roomRef && listener) roomRef.off("value",listener);
-
-  roomRef = null;
-  listener = null;
-  roomId = null;
-  roomData = null;
-
-  $("game").classList.add("hidden");
-  $("setup").classList.remove("hidden");
-  $("roomInput").value = "";
-  setStatus("방에서 나왔어.");
 };
 
 init();
