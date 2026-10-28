@@ -4,113 +4,80 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>온라인 끝말잇기</title>
-
 <style>
 *{box-sizing:border-box}
 body{
   margin:0;padding:20px;
-  background:#101827;color:#f1f5f9;
+  background:#0f172a;color:#f8fafc;
   font-family:system-ui,sans-serif;
 }
-main{max-width:520px;margin:auto}
-h1{text-align:center;font-size:30px}
+main{max-width:500px;margin:auto}
+h1{text-align:center}
 .card{
   background:#1e293b;padding:20px;
   border-radius:18px;margin:16px 0;
 }
 input,button{
-  width:100%;padding:13px;margin-top:8px;
-  border:0;border-radius:10px;font-size:16px;
+  display:block;width:100%;padding:13px;
+  margin-top:10px;border:0;border-radius:10px;
+  font-size:16px;
 }
 input{background:#334155;color:white}
 button{
   background:#3b82f6;color:white;
   font-weight:bold;cursor:pointer;
 }
-button:disabled{opacity:.4}
+button:disabled{opacity:.45}
 .secondary{background:#475569}
+.center{text-align:center}
 #status{color:#93c5fd;text-align:center}
-#roomCode{
-  font-size:28px;text-align:center;
-  font-weight:bold;letter-spacing:4px;
-}
-#turn{
-  text-align:center;font-size:19px;
-  font-weight:bold;
-}
-#lastWord{
-  text-align:center;font-size:30px;
-  font-weight:bold;overflow-wrap:anywhere;
-}
-#words{
-  display:flex;flex-wrap:wrap;gap:8px;
-  padding:0;list-style:none;
-}
-#words li{
-  background:#334155;padding:8px 12px;
-  border-radius:10px;
-}
-#message{min-height:24px;color:#fbbf24}
-.small{color:#94a3b8;font-size:13px}
+#roomCode{font-size:28px;font-weight:bold;letter-spacing:4px}
+#lastWord{font-size:32px;font-weight:bold}
+#message{color:#fbbf24;min-height:24px}
+#words{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none}
+#words li{background:#334155;padding:8px;border-radius:8px}
 .hidden{display:none!important}
+.small{font-size:13px;color:#94a3b8}
 </style>
 </head>
-
 <body>
 <main>
-  <h1>🔤 끝말잇기</h1>
-  <p id="status">Firebase 연결을 준비하고 있어요.</p>
+<h1>🔤 끝말잇기</h1>
+<p id="status">Firebase 연결 중...</p>
 
-  <section class="card" id="setup">
-    <h3>🎮 게임 시작</h3>
+<section id="setup" class="card">
+  <h3>닉네임</h3>
+  <input id="nickname" maxlength="12" placeholder="닉네임 입력">
+  <button id="createBtn" disabled>새 방 만들기</button>
+  <hr style="border-color:#475569;margin:20px 0">
+  <input id="roomInput" maxlength="6" placeholder="6자리 방 코드">
+  <button id="joinBtn" class="secondary" disabled>방 참가하기</button>
+</section>
 
-    <label for="nickname">닉네임</label>
-    <input id="nickname" maxlength="12" placeholder="닉네임 입력">
+<section id="game" class="card hidden">
+  <p class="center">방 코드</p>
+  <div id="roomCode" class="center"></div>
+  <button id="copyBtn" class="secondary">방 코드 복사</button>
 
-    <button id="createBtn">새 방 만들기</button>
+  <p id="players" class="center"></p>
+  <h3 id="turn" class="center">대기 중</h3>
 
-    <hr style="border-color:#475569;margin:20px 0">
+  <div class="card center" style="background:#0f172a">
+    <p class="small">마지막 단어</p>
+    <div id="lastWord">첫 단어를 입력하세요</div>
+    <p id="required"></p>
+  </div>
 
-    <label for="roomInput">방 코드</label>
-    <input id="roomInput" maxlength="6"
-           placeholder="6자리 방 코드">
+  <form id="wordForm">
+    <input id="wordInput" maxlength="30" placeholder="단어 입력" autocomplete="off">
+    <button id="submitBtn" type="submit">단어 제출</button>
+  </form>
 
-    <button id="joinBtn" class="secondary">방 참가하기</button>
-
-    <p class="small">
-      두 명이 참가하면 게임이 시작됩니다.
-    </p>
-  </section>
-
-  <section class="card hidden" id="game">
-    <p style="text-align:center">방 코드</p>
-    <div id="roomCode">------</div>
-    <button id="copyBtn" class="secondary">방 코드 복사</button>
-
-    <hr style="border-color:#475569;margin:20px 0">
-
-    <p id="players">플레이어를 기다리는 중...</p>
-    <p id="turn">대기 중</p>
-
-    <div class="card" style="background:#0f172a">
-      <p class="small" style="text-align:center">마지막 단어</p>
-      <div id="lastWord">시작 전</div>
-      <p id="required" style="text-align:center;color:#93c5fd"></p>
-    </div>
-
-    <form id="wordForm">
-      <input id="wordInput" maxlength="30"
-             placeholder="단어 입력" autocomplete="off">
-      <button id="submitBtn" type="submit">단어 제출</button>
-    </form>
-
-    <p id="message" role="status"></p>
-
-    <h3>📚 사용한 단어</h3>
-    <ul id="words"></ul>
-
-    <button id="leaveBtn" class="secondary">화면 나가기</button>
-  </section>
+  <p id="message" role="status"></p>
+  <h3>사용한 단어</h3>
+  <ul id="words"></ul>
+  <button id="leaveBtn" class="secondary">나가기</button>
+</section>
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -118,354 +85,271 @@ button:disabled{opacity:.4}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
-/*
-  Firebase 콘솔에서 웹 앱 설정을 복사해 넣으세요.
-  Firebase 프로젝트: miniboardgame
-*/
 const firebaseConfig = {
-  apiKey: "여기에_API_KEY",
-  authDomain: "miniboardgame.firebaseapp.com",
-  databaseURL: "https://miniboardgame-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "miniboardgame",
-  storageBucket: "miniboardgame.firebasestorage.app",
-  messagingSenderId: "여기에_SENDER_ID",
-  appId: "여기에_APP_ID"
+  apiKey: "AIzaSyDArGtDypSSmWo6BiHDtQBaK5JeIkN0v14",
+  authDomain: "miniboardgame-25324.firebaseapp.com",
+  databaseURL: "https://miniboardgame-25324-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "miniboardgame-25324",
+  storageBucket: "miniboardgame-25324.firebasestorage.app",
+  messagingSenderId: "937903418490",
+  appId: "1:937903418490:web:723c9d64bdecb0fe0c5fc3"
 };
 
 const $ = id => document.getElementById(id);
-
-let db = null;
-let uid = null;
-let roomId = null;
-let roomRef = null;
-let unsubscribe = null;
-let currentRoom = null;
+let db, uid, roomRef, roomId, roomData, listener;
 let busy = false;
 
-function status(text) {
-  $("status").textContent = text;
-}
+function setStatus(text){ $("status").textContent = text; }
+function say(text){ $("message").textContent = text; }
 
-function message(text) {
-  $("message").textContent = text;
-}
+function normalize(s){ return s.trim().replace(/\s+/g,""); }
+function first(s){ return [...s][0]; }
+function last(s){ return [...s].at(-1); }
 
-function normalizeWord(word) {
-  return word.trim().replace(/\s+/g, "");
-}
-
-function firstChar(word) {
-  return [...word][0];
-}
-
-function lastChar(word) {
-  return [...word].at(-1);
-}
-
-function isHangulWord(word) {
-  return /^[가-힣]+$/.test(word);
-}
-
-function isConfigured() {
-  return firebaseConfig.apiKey !== "여기에_API_KEY"
-    && firebaseConfig.appId !== "여기에_APP_ID";
-}
-
-async function initialize() {
-  if (!isConfigured()) {
-    status("Firebase 설정을 먼저 입력해 주세요.");
-    return;
-  }
-
-  try {
+async function init(){
+  try{
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
 
     await firebase.auth().signInAnonymously();
     uid = firebase.auth().currentUser.uid;
 
-    status("Firebase 연결 완료!");
     $("createBtn").disabled = false;
     $("joinBtn").disabled = false;
-  } catch (error) {
-    status("연결 실패: " + error.message);
+    setStatus("Firebase 연결 완료!");
+  }catch(e){
+    setStatus("Firebase 연결 실패: " + e.message);
+    console.error(e);
   }
 }
 
-$("createBtn").disabled = true;
-$("joinBtn").disabled = true;
-
-function randomRoomId() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+function newCode(){
+  return String(Math.floor(100000 + Math.random()*900000));
 }
 
-async function createRoom() {
-  if (!db || busy) return;
-
+async function createRoom(){
+  if(busy) return;
   const name = $("nickname").value.trim();
-
-  if (!name) {
-    alert("닉네임을 입력해 주세요.");
-    return;
-  }
+  if(!name) return alert("닉네임을 입력해!");
 
   busy = true;
   $("createBtn").disabled = true;
 
-  try {
-    let created = false;
+  try{
+    let success = false;
 
-    for (let i = 0; i < 10; i++) {
-      const code = randomRoomId();
-      const ref = db.ref("rooms/" + code);
+    for(let i=0;i<10;i++){
+      const code = newCode();
+      const ref = db.ref("rooms/"+code);
 
-      const result = await ref.transaction(old => {
-        if (old !== null) return;
+      const result = await ref.transaction(old=>{
+        if(old !== null) return;
         return {
-          players: {
-            [uid]: { name: name }
-          },
-          words: [],
-          lastWord: "",
-          turn: uid,
-          started: false,
-          createdAt: Date.now()
+          players:{[uid]:{name}},
+          words:[],
+          lastWord:"",
+          turn:uid,
+          started:false,
+          createdAt:Date.now()
         };
       });
 
-      if (result.committed) {
+      if(result.committed){
         roomId = code;
-        created = true;
+        success = true;
         break;
       }
     }
 
-    if (!created) throw new Error("방 생성에 실패했습니다.");
-
+    if(!success) throw Error("방 생성에 실패했어.");
     enterRoom();
-  } catch (error) {
-    alert("방 생성 실패: " + error.message);
-  } finally {
+  }catch(e){
+    alert("방 생성 실패: "+e.message);
+  }finally{
     busy = false;
     $("createBtn").disabled = false;
   }
 }
 
-async function joinRoom() {
-  if (!db || busy) return;
+async function joinRoom(){
+  if(busy) return;
 
   const name = $("nickname").value.trim();
   const code = $("roomInput").value.trim();
 
-  if (!name) {
-    alert("닉네임을 입력해 주세요.");
-    return;
-  }
-
-  if (!/^\d{6}$/.test(code)) {
-    alert("6자리 방 코드를 입력해 주세요.");
-    return;
-  }
+  if(!name) return alert("닉네임을 입력해!");
+  if(!/^\d{6}$/.test(code)) return alert("방 코드는 숫자 6자리야.");
 
   busy = true;
   $("joinBtn").disabled = true;
 
-  try {
-    const ref = db.ref("rooms/" + code);
+  try{
+    const ref = db.ref("rooms/"+code);
 
-    const result = await ref.transaction(old => {
-      if (!old || !old.players) return;
+    const result = await ref.transaction(old=>{
+      if(!old || !old.players) return;
+      if(old.players[uid]) return;
+      if(old.started || Object.keys(old.players).length >= 2) return;
 
-      if (old.players[uid]) return;
-
-      const playerIds = Object.keys(old.players);
-
-      if (playerIds.length >= 2 || old.started) return;
-
-      old.players[uid] = { name: name };
+      old.players[uid] = {name};
       old.started = true;
-
       return old;
     });
 
-    if (!result.committed) {
-      throw new Error("방이 없거나 이미 인원이 가득 찼습니다.");
+    if(!result.committed){
+      throw Error("방이 없거나 이미 가득 찼어.");
     }
 
     roomId = code;
     enterRoom();
-  } catch (error) {
-    alert(error.message);
-  } finally {
+  }catch(e){
+    alert("참가 실패: "+e.message);
+  }finally{
     busy = false;
     $("joinBtn").disabled = false;
   }
 }
 
-function enterRoom() {
+function enterRoom(){
   $("setup").classList.add("hidden");
   $("game").classList.remove("hidden");
   $("roomCode").textContent = roomId;
 
-  roomRef = db.ref("rooms/" + roomId);
+  roomRef = db.ref("rooms/"+roomId);
 
-  if (unsubscribe) unsubscribe();
+  if(listener) roomRef.off("value",listener);
 
-  const listener = roomRef.on("value", snapshot => {
-    currentRoom = snapshot.val();
+  listener = roomRef.on("value",snap=>{
+    roomData = snap.val();
 
-    if (!currentRoom) {
-      status("방이 삭제되었습니다.");
+    if(!roomData){
+      setStatus("방이 삭제되었어.");
       return;
     }
-
-    renderRoom();
+    render();
+  },error=>{
+    setStatus("방 읽기 실패: "+error.message);
   });
-
-  unsubscribe = () => roomRef.off("value", listener);
 }
 
-function renderRoom() {
-  const room = currentRoom;
-  const players = room.players || {};
+function render(){
+  const r = roomData;
+  const players = r.players || {};
   const ids = Object.keys(players);
 
-  $("players").textContent = ids
-    .map((id, i) => `${i + 1}. ${players[id].name}${id === uid ? " (나)" : ""}`)
-    .join("  |  ");
+  $("players").textContent = ids.map((id,i)=>
+    `${i+1}. ${players[id].name}${id===uid?" (나)":""}`
+  ).join(" | ");
 
-  if (ids.length < 2) {
-    $("turn").textContent = "상대방을 기다리는 중...";
-    status("방 코드 " + roomId + "를 친구에게 알려 주세요.");
-  } else if (room.turn === uid) {
+  if(ids.length < 2){
+    $("turn").textContent = "상대방 기다리는 중...";
+    setStatus("방 코드를 친구에게 알려 줘!");
+  }else if(r.turn===uid){
     $("turn").textContent = "🟢 내 차례!";
-    status("단어를 입력하세요.");
-  } else {
+    setStatus("단어를 입력해!");
+  }else{
     $("turn").textContent = "⏳ 상대방 차례";
-    status("상대방이 단어를 입력하고 있어요.");
+    setStatus("상대방이 입력 중이야.");
   }
 
-  $("lastWord").textContent = room.lastWord || "첫 단어를 입력하세요";
+  $("lastWord").textContent = r.lastWord || "첫 단어!";
+  $("required").textContent = r.lastWord
+    ? last(r.lastWord)+"(으)로 시작하는 단어"
+    : "아무 단어나 입력해!";
 
-  $("required").textContent = room.lastWord
-    ? "'" + lastChar(room.lastWord) + "'로 시작하는 단어"
-    : "원하는 단어로 시작하세요!";
+  $("words").replaceChildren();
 
-  const list = $("words");
-  list.replaceChildren();
-
-  (room.words || []).slice().reverse().forEach(item => {
+  (r.words||[]).slice().reverse().forEach(item=>{
     const li = document.createElement("li");
-    li.textContent = item.word + " · " + item.name;
-    list.appendChild(li);
+    li.textContent = item.word+" · "+item.name;
+    $("words").appendChild(li);
   });
 
-  const canPlay = ids.length === 2 && room.turn === uid;
-
+  const canPlay = ids.length===2 && r.turn===uid;
   $("wordInput").disabled = !canPlay;
   $("submitBtn").disabled = !canPlay;
-
-  if (canPlay && document.activeElement !== $("wordInput")) {
-    $("wordInput").focus();
-  }
 }
 
-async function submitWord(event) {
-  event.preventDefault();
+async function submitWord(e){
+  e.preventDefault();
+  if(!roomRef || !roomData || busy) return;
 
-  if (!roomRef || !currentRoom || busy) return;
+  const word = normalize($("wordInput").value);
 
-  const word = normalizeWord($("wordInput").value);
-
-  if (!word) {
-    message("단어를 입력해 주세요.");
-    return;
-  }
-
-  if (!isHangulWord(word)) {
-    message("한글로 된 단어만 입력할 수 있어요.");
+  if(!/^[가-힣]+$/.test(word)){
+    say("한글 단어만 입력해!");
     return;
   }
 
   busy = true;
   $("submitBtn").disabled = true;
 
-  try {
-    const result = await roomRef.transaction(room => {
-      if (!room || !room.players || !room.started) return;
+  try{
+    const result = await roomRef.transaction(r=>{
+      if(!r || !r.players || !r.started || r.turn!==uid) return;
 
-      if (room.turn !== uid) return;
+      const words = r.words || [];
 
-      const words = room.words || [];
+      if(words.some(x=>x.word===word)) return;
+      if(r.lastWord && first(word)!==last(r.lastWord)) return;
 
-      if (words.some(item => item.word === word)) return;
+      const other = Object.keys(r.players).find(id=>id!==uid);
+      if(!other) return;
 
-      if (
-        room.lastWord &&
-        firstChar(word) !== lastChar(room.lastWord)
-      ) return;
-
-      room.words = words.concat([{
-        word: word,
-        uid: uid,
-        name: room.players[uid].name,
-        time: Date.now()
+      r.words = words.concat([{
+        word,
+        uid,
+        name:r.players[uid].name,
+        time:Date.now()
       }]);
 
-      room.lastWord = word;
-
-      const otherPlayer = Object.keys(room.players)
-        .find(id => id !== uid);
-
-      if (!otherPlayer) return;
-
-      room.turn = otherPlayer;
-
-      return room;
+      r.lastWord = word;
+      r.turn = other;
+      return r;
     });
 
-    if (result.committed) {
+    if(result.committed){
       $("wordInput").value = "";
-      message("정답! 다음 사람 차례입니다. 🎉");
-    } else {
-      message("차례, 단어 중복 또는 끝 글자를 확인해 주세요.");
+      say("성공! 🎉");
+    }else{
+      say("틀렸어! 끝 글자, 중복, 차례를 확인해.");
     }
-  } catch (error) {
-    message("제출 실패: " + error.message);
-  } finally {
+  }catch(e){
+    say("제출 실패: "+e.message);
+  }finally{
     busy = false;
-    renderRoom();
+    render();
   }
 }
 
-$("createBtn").addEventListener("click", createRoom);
-$("joinBtn").addEventListener("click", joinRoom);
-$("wordForm").addEventListener("submit", submitWord);
+$("createBtn").onclick = createRoom;
+$("joinBtn").onclick = joinRoom;
+$("wordForm").onsubmit = submitWord;
 
-$("copyBtn").addEventListener("click", async () => {
-  try {
+$("copyBtn").onclick = async()=>{
+  try{
     await navigator.clipboard.writeText(roomId);
-    message("방 코드를 복사했어요!");
-  } catch {
-    message("방 코드: " + roomId);
+    say("방 코드 복사 완료!");
+  }catch{
+    say("방 코드: "+roomId);
   }
-});
+};
 
-$("leaveBtn").addEventListener("click", () => {
-  if (unsubscribe) unsubscribe();
+$("leaveBtn").onclick = ()=>{
+  if(roomRef && listener) roomRef.off("value",listener);
 
-  roomId = null;
   roomRef = null;
-  currentRoom = null;
+  listener = null;
+  roomId = null;
+  roomData = null;
 
   $("game").classList.add("hidden");
   $("setup").classList.remove("hidden");
   $("roomInput").value = "";
+  setStatus("방에서 나왔어.");
+};
 
-  status("방에서 나왔습니다.");
-});
-
-initialize();
+init();
 </script>
 </body>
 </html>
